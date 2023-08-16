@@ -1,0 +1,7 @@
+version: "3.3"
+
+services:
+  ros_base:
+    image: ros:humble
+    ports:
+      - "11411"
