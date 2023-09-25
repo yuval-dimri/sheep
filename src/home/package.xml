@@ -4,7 +4,7 @@
   <name>home</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="juviyu@gmail.com">vscode</maintainer>
+  <maintainer email="yuval5363@gmail.com">vscode</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
