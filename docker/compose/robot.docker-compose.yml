@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  ros-container:
+    image: stereolabs/zed:3.4-ros-devel-l4t-r32.3.1
+    container_name: zed_container
+    privileged: true # Enable privileged mode for hardware access (e.g., for ZED camera)
+    network_mode: host # Use the host network mode for better performance and ROS communication
+    volumes:
+      - /dev:/dev # Mount host's /dev folder for hardware access
+    environment:
+      - ROS_MASTER_URI=http://localhost:11311 # Set ROS master URI
+      - ROS_IP=<your_host_ip> # Replace with your host machine's IP address
+      - NVIDIA_VISIBLE_DEVICES=all
+    # runtime: nvidia
