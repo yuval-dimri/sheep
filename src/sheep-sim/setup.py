@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'robot'
+package_name = 'sheep-sim'
 
 setup(
     name=package_name,
@@ -13,7 +13,7 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='vscode',
+    maintainer='yuval',
     maintainer_email='juviyu@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
