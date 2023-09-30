@@ -9,7 +9,19 @@
   <xacro:property name="wheel_thickness" value="0.02" />
   <!-- Base Link -->
   <link name="chassis">
+  </link>
 
+  <macro name="cylinder_inertia" params="m r h">
+    <inertial>
+      <mass value="${m}" />
+      <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0"
+        iyy="${m*(3*r*r+h*h)/12}" iyz="0"
+        izz="${m*r*r/2}"
+      />
+    </inertial>
+  </macro>
+
+  <link name="base_footprint">
     <visual>
       <origin xyz="0.0 0.0 ${sheep_plate_height_from_ground}" />
       <geometry>
@@ -25,13 +37,14 @@
       </geometry>
     </collision>
 
-    <inertial>
+    <!-- <inertial>
       <mass value="3.0" />
       <inertia ixx="${0.25 * sheep_plate_radius**2 + 1/12 * sheep_plate_thickness**2}"
         iyy="${0.25 * sheep_plate_radius**2 + 1/12 * sheep_plate_thickness**2}"
         izz="${0.5 * sheep_plate_radius**2}"
         ixy="0.0" ixz="0.0" iyz="0.0" />
-    </inertial>
+    </inertial> -->
+    <xacro:cylinder_inertia m="10" r="${sheep_plate_radius}" h="${sheep_plate_thickness}" />
 
   </link>
 
@@ -46,6 +59,7 @@
   <link name="left_wheel">
     <collision>
       <xacro:wheel_shape />
+
     </collision>
 
     <visual>
@@ -53,13 +67,15 @@
       <material name="black" />
     </visual>
 
-    <inertial>
+    <xacro:cylinder_inertia m="10" r="${wheel_radius}" h="${wheel_thickness}" />
+
+    <!-- <inertial>
       <mass value="1.0" />
       <inertia ixx="${0.25 * wheel_radius**2 + 1/12 * wheel_thickness**2}"
         iyy="${0.25 * wheel_radius**2 + 1/12 * wheel_thickness**2}"
         izz="${0.5 * wheel_radius**2}"
         ixy="0.0" ixz="0.0" iyz="0.0" />
-    </inertial>
+    </inertial> -->
   </link>
 
 
@@ -74,13 +90,15 @@
       <material name="black" />
     </visual>
 
-    <inertial>
+    <xacro:cylinder_inertia m="10" r="${wheel_radius}" h="${wheel_thickness}" />
+
+    <!-- <inertial>
       <mass value="1.0" />
       <inertia ixx="${0.25 * wheel_radius**2 + 1/12 * wheel_thickness**2}"
         iyy="${0.25 * wheel_radius**2 + 1/12 * wheel_thickness**2}"
         izz="${0.5 * wheel_radius**2}"
         ixy="0.0" ixz="0.0" iyz="0.0" />
-    </inertial>
+    </inertial> -->
   </link>
 
   <link name="caster">
@@ -88,6 +106,16 @@
       <geometry>
         <sphere radius="${wheel_radius/4}" />
       </geometry>
+      <surface>
+        <friction>
+          <ode>
+            <mu>0.01</mu>
+            <mu2>0.01</mu2>
+            <slip1>1.00</slip1>
+            <slip2>1.00</slip2>
+          </ode>
+        </friction>
+      </surface>
     </collision>
 
     <visual>
@@ -99,9 +127,13 @@
 
     <inertial>
       <mass value="0.1" />
-      <inertia ixx="${2/5 * 0.2 * (wheel_radius/4)**2}"
-        iyy="${2/5 * 0.2 * (wheel_radius/4)**2}"
-        izz="${2/5 * 0.2 * (wheel_radius/4)**2}"
+      <!-- <inertia ixx="${2/5 * 0.2 * (wheel_radius/4)**2}"
+      iyy="${2/5 * 0.2 * (wheel_radius/4)**2}"
+      izz="${2/5 * 0.2 * (wheel_radius/4)**2}"
+      ixy="0.0" ixz="0.0" iyz="0.0" /> -->
+      <inertia ixx="0.001"
+        iyy="0.001"
+        izz="0.001"
         ixy="0.0" ixz="0.0" iyz="0.0" />
     </inertial>
   </link>
@@ -133,7 +165,7 @@
     <parent link="chassis" />
     <child link="left_wheel" />
     <origin
-      xyz="-0.05 ${sheep_plate_radius + wheel_thickness/2.0} ${sheep_plate_height_from_ground}"
+      xyz="-0.09 ${sheep_plate_radius + wheel_thickness/2.0} ${sheep_plate_height_from_ground}"
       rpy="-1.5707 0.0 0.0" />
     <axis xyz="0 0 1" />
     <dynamics damping="0.2" />
@@ -143,7 +175,7 @@
     <parent link="chassis" />
     <child link="right_wheel" />
     <origin
-      xyz="-0.05 ${-(sheep_plate_radius + wheel_thickness/2.0)} ${sheep_plate_height_from_ground}"
+      xyz="-0.09 ${-(sheep_plate_radius + wheel_thickness/2.0)} ${sheep_plate_height_from_ground}"
       rpy="-1.5707 0.0 0.0" />
     <axis xyz="0 0 1" />
     <dynamics damping="0.2" />
@@ -157,10 +189,15 @@
     <child link="caster" />
   </joint>
 
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="chassis" />
+    <child link="base_footprint" />
+  </joint>
+
   <joint name="lidar_joint" type="fixed">
     <parent link="chassis" />
     <child link="lidar_link" />
-    <origin xyz="0 0 ${sheep_plate_height_from_ground + sheep_plate_thickness + 0.02}" rpy="0 0 0" />
+    <origin xyz="0 0 ${sheep_plate_height_from_ground + sheep_plate_thickness + 0.02 }" rpy="0 0 0" />
   </joint>
   <!-- caster frontal wheel Link -->
 
