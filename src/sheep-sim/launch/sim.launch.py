@@ -16,8 +16,8 @@ import xacro
 def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py'])
-        # launch_arguments={'world': 'worlds/robocup09_spl_field.world'}.items()
+            get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
+        launch_arguments={'world': 'worlds/willowgarage.world'}.items()
     )
 
     pkg_path = os.path.join(
