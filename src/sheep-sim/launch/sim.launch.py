@@ -1,54 +1,73 @@
 import os
+
 from ament_index_python.packages import get_package_share_directory
+
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+from launch_ros.actions import Node
+
+import xacro
 
 
 def generate_launch_description():
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
+    )
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    urdf_file_name = 'urdf/sheep_basic.xacro'
+    pkg_path = os.path.join(
+        get_package_share_directory('sheep-sim'))
 
-    print("urdf_file_name : {}".format(urdf_file_name))
+    xacro_file = os.path.join(pkg_path,
+                              'urdf',
+                              'sheep_basic.xacro')
 
-    urdf = os.path.join(
-        get_package_share_directory('sheep-sim'),
-        urdf_file_name)
+    doc = xacro.parse(open(xacro_file))
+    xacro.process_doc(doc)
+    params = {'robot_description': doc.toxml()}
+
+    node_robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        parameters=[params]
+    )
+
+    spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
+                        arguments=['-topic', 'robot_description',
+                                   '-entity', 'cartpole'],
+                        output='screen')
+
+    load_joint_state_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'start',
+             'joint_state_broadcaster'],
+        output='screen'
+    )
+
+    load_joint_trajectory_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'start',
+             'diff_drive_base_controller'],
+        output='screen'
+    )
 
     return LaunchDescription([
-
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='false',
-            description='Use simulation (Gazebo) clock if true'),
-
-        ExecuteProcess(
-            cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so'],
-            output='screen'),
-
-        Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            output='screen',
-            parameters=[{'use_sim_time': use_sim_time}],
-            arguments=[urdf]),
-
-        Node(
-            package='joint_state_publisher',
-            executable='joint_state_publisher',
-            name='joint_state_publisher',
-            output='screen',
-            parameters=[{'use_sim_time': use_sim_time}]
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=spawn_entity,
+                on_exit=[load_joint_state_controller],
+            )
         ),
-
-        Node(
-            package='gazebo_ros',
-            executable='spawn_entity.py',
-            name='urdf_spawner',
-            output='screen',
-            arguments=["-topic", "/robot_description", "-entity", "sheep"])
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=load_joint_state_controller,
+                on_exit=[load_joint_trajectory_controller],
+            )
+        ),
+        gazebo,
+        node_robot_state_publisher,
+        spawn_entity,
     ])
