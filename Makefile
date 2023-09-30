@@ -6,12 +6,12 @@ LOCK_FILE := .lock
 all: build
 
 # Build the ROS2 code
-build:
+build: clean
 	@echo "Building ROS2 code..."
 	colcon build --symlink-install
 
 # Run the simulation setup
-simulation: check_lock
+simulation:  build
 	@echo "Running simulation setup..."
 	touch $(LOCK_FILE)
 	trap 'rm -f $(LOCK_FILE); exit' INT; \
