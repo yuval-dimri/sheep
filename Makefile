@@ -12,26 +12,11 @@ build: clean
 
 # Run the simulation setup
 simulation:  build
-	@echo "Running simulation setup..."
-	touch $(LOCK_FILE)
-	trap 'rm -f $(LOCK_FILE); exit' INT; \
 	ros2 launch sheep-sim sim.launch.py
-	rm -f $(LOCK_FILE)
 
 # Run the robot code
-robot: check_lock
-	@echo "Running robot code..."
-	touch $(LOCK_FILE)
-	trap 'rm -f $(LOCK_FILE); exit' INT; \
-	ros2 run sheep-hardware wh.launch.py
-	rm -f $(LOCK_FILE)
-
-# Check for lock file
-check_lock:
-	@if [ -f $(LOCK_FILE) ]; then \
-		echo "Another instance (simulation or robot) is already running. Stop it first."; \
-		exit 1; \
-	fi
+robot: 
+	ros2 run sheep-hardware hw.launch.py
 
 # Add other targets as needed
 other:
