@@ -8,8 +8,18 @@
   <xacro:property name="wheel_radius" value="0.06" />
   <xacro:property name="wheel_thickness" value="0.02" />
   <!-- Base Link -->
-  <link name="chassis">
 
+  <xacro:macro name="cylinder_inertia" params="m r h">
+    <inertial>
+      <mass value="${m}" />
+      <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0"
+        iyy="${m*(3*r*r+h*h)/12}" iyz="0"
+        izz="${m*r*r/2}"
+      />
+    </inertial>
+  </xacro:macro>
+
+  <link name="base_footprint">
     <visual>
       <origin xyz="0.0 0.0 ${sheep_plate_height_from_ground}" />
       <geometry>
@@ -167,6 +177,43 @@
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <parameters>$(find sheep-sim)/config/diff_drive_controller.yaml</parameters>
     </plugin>
+  </gazebo>
+
+  <gazebo reference="lidar_link">
+    <sensor type="ray" name="lidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>0.0000000</min_angle>
+            <max_angle>6.28</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.1</min>
+          <max>30</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=laserscan</remapping>
+        </ros>
+        <!-- <topicName>/scan</topicName> -->
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frameName>lidar_link</frameName>
+      </plugin>
+    </sensor>
+
   </gazebo>
 
 </robot>

@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  ros-container:
+  zed-camera:
     image: stereolabs/zed:3.4-ros-devel-l4t-r32.3.1
     container_name: zed_container
     privileged: true # Enable privileged mode for hardware access (e.g., for ZED camera)
@@ -12,3 +12,24 @@ services:
       - ROS_IP=<your_host_ip> # Replace with your host machine's IP address
       - NVIDIA_VISIBLE_DEVICES=all
     # runtime: nvidia
+
+  sim:
+    image: sheep_sim:latest
+    build:
+      context: .
+      dockerfile: docker/files/sheep-sim.Dockerfile
+
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "cd /sheep && source install/setup.bash && make simulation"
+      ]
+    network_mode: host
+    volumes:
+      - .:/home/ros/sheep
+  # listener:
+  #   image: osrf/ros:humble-desktop
+  #   command: ros2 run demo_nodes_cpp listener
+  #   depends_on:
+  #     - talker
